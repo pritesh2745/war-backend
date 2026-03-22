@@ -1,43 +1,33 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
 
 app = Flask(__name__)
-CORS(app)  
+CORS(app)
 
-# Load data
+# Load dataset (only for summary endpoint)
 df = pd.read_csv("waves.csv")
 
-df = df[[
-    'drones_used',
-    'ballistic_missiles_used',
-    'estimated_munitions_count',
-    'fatalities',
-    'injuries'
-]].fillna(0)
+# 🔥 DIRECT SCORING FUNCTION (NO ML MODEL)
+def calculate_intensity(drones, missiles, munitions, fatalities, injuries):
+    score = (
+        drones * 1 +
+        missiles * 3 +
+        munitions * 0.7 +
+        fatalities * 10 +
+        injuries * 3
+    )
 
-# Create target
-def classify(row):
-    score = row['estimated_munitions_count'] + row['fatalities'] * 2
-    if score < 50:
-        return 0
-    elif score < 150:
-        return 1
+    if score < 100:
+        return "LOW"
+    elif score < 300:
+        return "MEDIUM"
     else:
-        return 2
-
-df['intensity'] = df.apply(classify, axis=1)
-
-X = df.drop('intensity', axis=1)
-y = df['intensity']
-
-model = RandomForestClassifier()
-model.fit(X, y)
+        return "HIGH"
 
 @app.route("/")
 def home():
-    return "War Intelligence API Running"
+    return "War Intelligence API Running (Final Logic)"
 
 @app.route("/predict")
 def predict():
@@ -47,18 +37,17 @@ def predict():
     fatalities = float(request.args.get("fatalities", 1))
     injuries = float(request.args.get("injuries", 2))
 
-    sample = [[drones, missiles, munitions, fatalities, injuries]]
-    pred = model.predict(sample)[0]
+    intensity = calculate_intensity(
+        drones, missiles, munitions, fatalities, injuries
+    )
 
-    labels = ["LOW", "MEDIUM", "HIGH"]
-
-    return jsonify({"intensity": labels[pred]})
+    return jsonify({"intensity": intensity})
 
 @app.route("/summary")
 def summary():
     return jsonify({
         "records": len(df),
-        "features": list(X.columns)
+        "note": "Using rule-based scoring system"
     })
 
 if __name__ == "__main__":
