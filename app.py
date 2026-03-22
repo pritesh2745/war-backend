@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
 app = Flask(__name__)
-CORS(app)  # ✅ ENABLE CORS
+CORS(app)  
 
 # Load data
 df = pd.read_csv("waves.csv")
