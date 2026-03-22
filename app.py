@@ -1,9 +1,12 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
 app = Flask(__name__)
+CORS(app)  # ✅ ENABLE CORS
 
+# Load data
 df = pd.read_csv("waves.csv")
 
 df = df[[
@@ -14,6 +17,7 @@ df = df[[
     'injuries'
 ]].fillna(0)
 
+# Create target
 def classify(row):
     score = row['estimated_munitions_count'] + row['fatalities'] * 2
     if score < 50:
