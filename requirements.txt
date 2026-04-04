@@ -1,5 +1,10 @@
-flask
+fastapi
+uvicorn
 pandas
+numpy
 scikit-learn
-gunicorn
-flask-cors
+joblib
+matplotlib
+seaborn
+mlflow
+prefect
